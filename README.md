@@ -1,66 +1,66 @@
-# 🌀 DataStorm v7
+# 🌀 DataStorm 7.0 — Ctrl Freaks
 
-**An end-to-end MLOps data pipeline for beverage distribution analytics in Sri Lanka.**
+**Latent Demand Estimation Pipeline for Sri Lanka Beverage Distribution (January 2026 Forecast)**
 
-Built for the [DataStorm 7.0](https://octave.lk/datastorm/) competition, this project implements a production-grade **Medallion Architecture** (Bronze → Silver → Gold) orchestrated by [ZenML](https://zenml.io), with experiment tracking via [MLflow](https://mlflow.org/) and data versioning through [DVC](https://dvc.org/).
+Built for the [DataStorm 7.0](https://octave.lk/datastorm/) competition by Octave John Keells Group. This project implements a production-grade **Agentic Medallion Architecture** to solve the left-censored demand problem in FMCG distribution.
 
 ---
 
 ## 📋 Table of Contents
 
 - [Overview](#overview)
+- [Key Innovations](#key-innovations)
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
 - [Pipeline Stages](#pipeline-stages)
 - [Getting Started](#getting-started)
-- [Configuration](#configuration)
 - [Tech Stack](#tech-stack)
-- [License](#license)
+- [Team](#team)
 
 ---
 
 ## Overview
 
-DataStorm v7 ingests raw transactional and geospatial data from Sri Lanka's FMCG distribution network, cleans and validates it through automated data-quality gates, enriches outlet profiles with OpenStreetMap point-of-interest (POI) features, and produces a unified **master training matrix** ready for downstream ML modeling.
+Ctrl Freaks' solution addresses the "min(Demand, Constraint)" problem. Observed sales are often capped by supply-side constraints (credit, delivery, storage). We estimate the **true uncapped potential** for 20,000 outlets for January 2026 using a combination of censored regression, spatial diffusion modeling, and peer-group benchmarking.
 
-### Key Highlights
+---
 
-| Capability | Detail |
-|---|---|
-| **Data Ingestion** | Batch CSV → Parquet conversion for 5 source tables |
-| **Data Quality** | Automated null checks, range validation, and quarantine of rejected rows |
-| **Spatial Enrichment** | Vectorized spatial joins with 1 km POI buffers using GeoPandas |
-| **Experiment Tracking** | DQ metrics logged to MLflow (clean ratio, row counts) |
-| **Orchestration** | Fully reproducible ZenML pipeline with step-level caching |
-| **Data Versioning** | DVC-tracked data artifacts |
+## Key Innovations
+
+- **Turing Reaction-Diffusion Feature**: Inspired by Alan Turing's morphogenesis papers, we implemented a Gray-Scott RD system to compute spatial "demand pressure" activator surfaces.
+- **Tobit-Style Censored Regression**: A structural modeling approach that explicitly accounts for left-censoring at observed historical peaks.
+- **Agentic Medallion Pipeline**: A 4-stage pipeline (Agents A-D) that moves data from raw forensic records to model-ready features and final forecasts.
+- **OSM Spatial Enrichment**: Vectorized extraction of 8,750+ POIs via the Overpass API to map outlet catchment density.
 
 ---
 
 ## Architecture
 
 ```mermaid
-flowchart LR
-    subgraph Z["ZenML Pipeline"]
-        direction LR
-
-        subgraph B["BRONZE"]
-            B1["Raw CSV → Parquet"]
-        end
-
-        subgraph S["SILVER"]
-            S1["DQ Checks & Quarantine"]
-        end
-
-        subgraph G["GOLD"]
-            G1["Spatial Enrichment<br/>+ Master Merge"]
-        end
-
-        B1 --> S1
-        S1 --> G1
-
-        S1 --> M["MLflow<br/>Tracking"]
-        G1 --> O["OSM / POI<br/>Overpass"]
+graph TD
+    subgraph A["Agent A (Bronze)"]
+        A1[Raw CSV Ingestion] --> A2[Parquet Conversion]
     end
+
+    subgraph B["Agent B (Silver)"]
+        B1[DQ Audits] --> B2[Quarantine Pattern]
+        B2 --> B3[Flatline Forensic Check]
+    end
+
+    subgraph C["Agent C (Gold)"]
+        C1[OSM POI Scraper] --> C2[Turing RD Simulation]
+        C2 --> C3[Feature Engineering]
+    end
+
+    subgraph D["Agent D (Model)"]
+        D1[Censoring Threshold Logic] --> D2[Tobit GBR Ensemble]
+        D2 --> D3[SFA & Peer Uplift]
+    end
+
+    A2 --> B1
+    B3 --> C1
+    C3 --> D1
+    D3 --> F[Final CSV Predictions]
 ```
 
 ---
@@ -68,190 +68,87 @@ flowchart LR
 ## Project Structure
 
 ```
-DataStorm-v7/
-├── README.md
-└── datastorm-v7/                  # Main project root (ZenML project)
-    ├── params.yaml                # Central pipeline configuration
-    ├── prime_map_data.py          # Standalone script to pre-download POIs
-    ├── mlflow.db                  # MLflow experiment tracking database
-    │
-    ├── pipeline/                  # Pipeline step definitions
-    │   ├── datastorm_pipeline.py  # 🔗 Main pipeline orchestrator
-    │   ├── bronze_ingestion.py    # Step 1 — CSV → Parquet ingestion
-    │   ├── silver_cleaning.py     # Step 2 — DQ checks & cleaning
-    │   ├── dq_checks.py          # Reusable data quality utilities
-    │   └── gold_merger.py        # Step 4 — Master feature matrix merge
-    │
-    ├── scraping/                  # External data acquisition
-    │   ├── poi_processor.py       # Step 3 — OSM POI download & spatial joins
-    │   └── sri_lanka_pois.parquet # Cached POI dataset
-    │
-    ├── modeling/                  # ML model development (WIP)
-    │
-    ├── raw_data/                  # Source CSV files (gitignored)
-    │   ├── transactions_history_final.csv
-    │   ├── outlet_master.csv
-    │   ├── outlet_coordinates.csv
-    │   ├── distributor_seasonality_details.csv
-    │   └── holiday_list.csv
-    │
-    ├── data/                      # Medallion data lake
-    │   ├── bronze/                # Ingested parquet files
-    │   ├── silver/                # Cleaned data + rejected/ quarantine
-    │   └── gold/                  # Final feature matrix
-    │
-    └── outputs/                   # Pipeline run outputs
+.
+├── data/
+│   ├── bronze/               # Ingested parquet files
+│   ├── silver/               # Cleaned data + rejected records
+│   ├── gold/                 # Feature matrix + Turing RD states
+│   └── predictions/          # Final Submission CSV
+├── report/                   # Formal Typst Report
+│   ├── main.typ              # Entry point
+│   └── sections/             # Modular chapters
+├── src/
+│   ├── bronze/               # Agent A: Ingestion
+│   ├── silver/               # Agent B: DQ & Forensics
+│   ├── gold/                 # Agent C: POIs & Turing RD
+│   ├── model/                # Agent D: Latent Demand Modeling
+│   └── eda/                  # Analysis & Diagnostic Scripts
+├── outputs/                  # Diagnostic Visualizations
+├── run_pipeline.sh           # End-to-End Runner
+└── params.yaml               # Pipeline configuration
 ```
 
 ---
 
 ## Pipeline Stages
 
-### 1️⃣ Bronze — Ingestion (`bronze_ingestion.py`)
+### 1️⃣ Agent A — Bronze (Ingestion)
+Converts raw CSV streams into type-strict Parquet structures, preserving $100\%$ of source signals with zero-loss compression.
 
-Reads all raw CSV source files and converts them to Parquet format in the `data/bronze/` layer for efficient downstream processing.
+### 2️⃣ Agent B — Silver (Forensics)
+Applies a **Quarantine Pattern** to trap anomalies. Implements the **Historical Flatline Check** to detect outlets whose sales are artificially capped by credit or delivery cycles.
 
-**Sources ingested:**
+### 3️⃣ Agent C — Gold (Feature Engineering)
+- **Overpass Scraper**: Fetches nationwide POI data (Schools, Markets, Bus Stations).
+- **Turing RD**: Runs a 500-step Gray-Scott simulation to derive the `rd_demand_pressure` spatial activator feature.
 
-- `transactions_history_final.csv` — Historical outlet transaction volumes
-- `outlet_master.csv` — Outlet metadata and attributes
-- `outlet_coordinates.csv` — Outlet latitude/longitude
-- `distributor_seasonality_details.csv` — Distributor seasonal patterns
-- `holiday_list.csv` — Sri Lankan holiday calendar
-
-### 2️⃣ Silver — Cleaning & DQ (`silver_cleaning.py`)
-
-Applies automated data quality checks and quarantines failing records:
-
-- **Null validation** on mandatory fields (`Outlet_ID`, `Volume_Liters`)
-- **Range validation** — removes negative volume entries
-- **Quarantine pattern** — rejected rows are saved to `data/silver/rejected/` with tagged failure reasons for auditability
-- **MLflow logging** — tracks `dq_total_raw_rows`, `dq_clean_rows`, and `dq_clean_ratio`
-
-### 3️⃣ Gold — Spatial Enrichment (`poi_processor.py`)
-
-Enriches outlet profiles with nearby point-of-interest counts from OpenStreetMap:
-
-- Downloads Sri Lanka POIs via the Overpass API (schools, hospitals, bus stations, restaurants, hotels, shops, etc.)
-- Projects coordinates to **UTM Zone 44N** (EPSG:32644) for metric distance calculations
-- Creates **1 km buffer zones** around each outlet
-- Performs vectorized spatial joins using GeoPandas
-- Produces per-outlet POI type counts (e.g., `poi_school_count`, `poi_hospital_count`)
-
-### 4️⃣ Gold — Master Merge (`gold_merger.py`)
-
-Forges the final training-ready feature matrix by joining:
-
-- Cleaned transaction aggregates (total volume, avg transaction size, count)
-- Outlet master attributes
-- Spatial POI features
-
-Applies smart imputation (numeric → 0, categorical → "Unknown") and saves as `data/gold/master_training_data.parquet`.
+### 4️⃣ Agent D — Model (Latent Estimation)
+- **Tobit Ensemble**: A 50/30/20 weighted ensemble of Censored Gradient Boosting, Stochastic Frontier Analysis (SFA), and Peer-Group Uplift.
+- **January Adjustment**: Applies a seasonal index to account for peak demand cycles.
 
 ---
 
 ## Getting Started
 
 ### Prerequisites
-
 - Python 3.9+
-- [ZenML](https://docs.zenml.io/getting-started/installation)
-- [DVC](https://dvc.org/doc/install)
+- [Typst](https://typst.app/) (for report generation)
+- [ZenML](https://zenml.io) (optional, orchestrator-agnostic)
 
 ### Installation
+```bash
+pip install pandas numpy scipy scikit-learn matplotlib seaborn pyarrow geopandas
+```
+
+### Running the Full Pipeline
+The provided shell script executes the end-to-end flow from data ingestion to final predictions and report-ready EDA:
 
 ```bash
-# Clone the repository
-git clone https://github.com/sukitha2001/datastorm-v7.git
-cd datastorm-v7/datastorm-v7
-
-# Install dependencies
-pip install zenml pandas geopandas shapely requests mlflow pyarrow pyyaml
-
-# Initialize ZenML
-zenml init
-
-# Register the MLflow experiment tracker
-zenml experiment-tracker register mlflow_tracker --flavor=mlflow
-zenml stack update default -e mlflow_tracker
+chmod +x run_pipeline.sh
+./run_pipeline.sh
 ```
 
-### Prepare Data
-
-Place the competition CSV files in the `raw_data/` directory:
-
-```
-raw_data/
-├── transactions_history_final.csv
-├── outlet_master.csv
-├── outlet_coordinates.csv
-├── distributor_seasonality_details.csv
-└── holiday_list.csv
-```
-
-### Pre-download POI Data (Optional)
-
-To avoid Overpass API timeouts during pipeline runs, pre-cache the POI dataset:
-
+### Compiling the Report
+To generate the formal PDF report:
 ```bash
-python prime_map_data.py
+typst compile report/main.typ --root .
 ```
-
-### Run the Pipeline
-
-```bash
-python pipeline/datastorm_pipeline.py
-```
-
-The pipeline will execute all four stages sequentially and produce the final feature matrix at `data/gold/master_training_data.parquet`.
-
----
-
-## Configuration
-
-All pipeline parameters are centralized in **`params.yaml`**:
-
-```yaml
-data:
-  raw_dir: "raw_data"
-  bronze_dir: "data/bronze"
-  silver_dir: "data/silver"
-  gold_dir: "data/gold"
-
-cleaning:
-  max_volume_liters: 50000
-  min_volume_liters: 0
-
-modeling:
-  quantile_alpha: 0.90
-  random_state: 42
-```
-
-| Parameter | Description |
-|---|---|
-| `data.*_dir` | I/O paths for each Medallion layer |
-| `cleaning.min_volume_liters` | Lower bound for volume validation (rows below this are quarantined) |
-| `cleaning.max_volume_liters` | Upper bound for volume validation |
-| `modeling.quantile_alpha` | Quantile threshold for downstream modeling |
-| `modeling.random_state` | Reproducibility seed |
 
 ---
 
 ## Tech Stack
 
-| Tool | Purpose |
+| Domain | Tools |
 |---|---|
-| **ZenML** | Pipeline orchestration, step caching, artifact tracking |
-| **MLflow** | Experiment tracking and DQ metric logging |
-| **DVC** | Data versioning for large Parquet artifacts |
-| **Pandas** | Tabular data manipulation |
-| **GeoPandas** | Geospatial operations and spatial joins |
-| **Shapely** | Geometric computations (buffering, points) |
-| **PyArrow / Parquet** | Columnar storage format for all data layers |
-| **Overpass API** | OpenStreetMap POI data acquisition |
+| **Pipeline** | ZenML, DVC, Apache Arrow |
+| **Analysis** | Pandas, SciPy, Scikit-Learn |
+| **Spatial** | GeoPandas, Overpass API, Shapely |
+| **Reporting** | Mermaid.js |
 
 ---
 
-## License
+## Team — Ctrl Freaks
 
-This project was developed for the DataStorm 7.0 competition organized by the Octave — John Keells Group.
+- **Prabhavi Hemachandra** — Ingestion, SFA, Report Synthesis
+- **Sukitha Rathnayake** — MLOps, DQ Forensics, Ensemble Logic
+- **Vidura Gunawardana** — Pipeline Architecture, Turing RD, Tobit Modeling
