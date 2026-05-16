@@ -22,11 +22,11 @@ env/
 # Raw competition data (large CSVs)
 datastorm-v7/raw_data/*.csv
 
-# Medallion data lake (Parquet artifacts tracked by DVC)
-datastorm-v7/data/bronze/*.parquet
-datastorm-v7/data/silver/*.parquet
-datastorm-v7/data/silver/rejected/*.parquet
-datastorm-v7/data/gold/*.parquet
+# Medallion data lake (Data committed directly to GitHub as requested)
+# datastorm-v7/data/bronze/*.parquet
+# datastorm-v7/data/silver/*.parquet
+# datastorm-v7/data/silver/rejected/*.parquet
+# datastorm-v7/data/gold/*.parquet
 
 # Cached POI dataset
 datastorm-v7/scraping/sri_lanka_pois.parquet
