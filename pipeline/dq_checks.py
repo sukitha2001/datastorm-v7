@@ -5,7 +5,7 @@ def check_nulls(df: pd.DataFrame, mandatory_cols: list, dataset_name: str) -> pd
     """Returns rows that have nulls in mandatory columns."""
     bad_mask = df[mandatory_cols].isnull().any(axis=1)
     bad_rows = df[bad_mask].copy()
-    print(f"[DQ] {dataset_name} — {len(bad_rows)} rows failed null check.")
+    print(f"[DQ] {dataset_name}  {len(bad_rows)} rows failed null check.")
     return bad_rows
 
 def quarantine(df: pd.DataFrame, bad_rows: pd.DataFrame, reason: str, rejected_dir: str, dataset_name: str) -> pd.DataFrame:

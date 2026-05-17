@@ -20,21 +20,21 @@ env/
 #  Data & Artifacts
 # ========================
 # Raw competition data (large CSVs)
-datastorm-v7/raw_data/*.csv
+raw_data/*.csv
 
 # Medallion data lake (Data committed directly to GitHub as requested)
-# datastorm-v7/data/bronze/*.parquet
-# datastorm-v7/data/silver/*.parquet
-# datastorm-v7/data/silver/rejected/*.parquet
-# datastorm-v7/data/gold/*.parquet
+# data/bronze/*.parquet
+# data/silver/*.parquet
+# data/silver/rejected/*.parquet
+# data/gold/*.parquet
 
 # Cached POI dataset
-datastorm-v7/scraping/sri_lanka_pois.parquet
+scraping/sri_lanka_pois.parquet
 
 # ========================
 #  MLflow
 # ========================
-datastorm-v7/mlflow.db
+mlflow.db
 mlruns/
 mlartifacts/
 
@@ -42,13 +42,13 @@ mlartifacts/
 #  DVC
 # ========================
 *.dvc
-!/datastorm-v7/.dvc/.gitignore
-datastorm-v7/.dvc/tmp/
+!/.dvc/.gitignore
+.dvc/tmp/
 
 # ========================
 #  ZenML
 # ========================
-datastorm-v7/.zen/local_stores/
+.zen/local_stores/
 
 # ========================
 #  IDE & OS
@@ -69,4 +69,9 @@ datastorm-v7/.zen/local_stores/
 # ========================
 #  Outputs
 # ========================
-datastorm-v7/outputs/
+predictions/
+outputs/
+Agents.md
+TuringPattern.md
+report/
+report.md
