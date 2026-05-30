@@ -59,16 +59,18 @@ if should_run 2; then phase_header 2 "SILVER — Data Quality & Cleaning"; ${PYT
 
 if should_run 3; then phase_header 3 "GOLD (POI) — Spatial Enrichment"; ${PYTHON} "${SCRIPT_DIR}/scraping/poi_processor.py"; else echo "  [SKIP] Phase 3"; fi
 
-if should_run 4; then phase_header 4 "GOLD (RD) — Turing Reaction-Diffusion"; ${PYTHON} "${SCRIPT_DIR}/src/gold/turing_rd.py"; else echo "  [SKIP] Phase 4"; fi
+if should_run 4; then phase_header 4 "GOLD (Merge) — Feature Assembly"; ${PYTHON} "${SCRIPT_DIR}/pipeline/gold_merger.py"; else echo "  [SKIP] Phase 4"; fi
 
-if should_run 5; then phase_header 5 "GOLD (Merge) — Feature Assembly"; ${PYTHON} "${SCRIPT_DIR}/pipeline/gold_merger.py"; else echo "  [SKIP] Phase 5"; fi
+if should_run 5; then phase_header 5 "GOLD (EDA) — Turing RD Prep"; ${PYTHON} "${SCRIPT_DIR}/src/eda/eda_advanced.py"; else echo "  [SKIP] Phase 5"; fi
 
-if should_run 6; then phase_header 6 "MODEL — Latent Demand Estimation"; ${PYTHON} "${SCRIPT_DIR}/src/model/latent_demand.py"; else echo "  [SKIP] Phase 6"; fi
+if should_run 6; then phase_header 6 "GOLD (RD) — Turing Reaction-Diffusion"; ${PYTHON} "${SCRIPT_DIR}/src/gold/turing_rd.py"; else echo "  [SKIP] Phase 6"; fi
 
-if should_run 7; then phase_header 7 "SPEND — Budget Optimization"; ${PYTHON} "${SCRIPT_DIR}/src/spend/optimizer.py"; else echo "  [SKIP] Phase 7"; fi
+if should_run 7; then phase_header 7 "MODEL — Latent Demand Estimation"; ${PYTHON} "${SCRIPT_DIR}/src/model/latent_demand.py"; else echo "  [SKIP] Phase 7"; fi
 
-if should_run 8; then
-    phase_header 8 "EXPORT — JSON + Web Assets"
+if should_run 8; then phase_header 8 "SPEND — Budget Optimization"; ${PYTHON} "${SCRIPT_DIR}/src/spend/optimizer.py"; else echo "  [SKIP] Phase 8"; fi
+
+if should_run 9; then
+    phase_header 9 "EXPORT — JSON + Web Assets"
     mkdir -p "${SCRIPT_DIR}/web/public/data"
     ${PYTHON} -c "
 import pandas as pd, json, os
@@ -190,10 +192,10 @@ with open(f'{PUBLIC}/analysis_manifest.json', 'w') as f:
 
 print(f'Analysis backend manifest: {len(manifest)} datasets')
 "
-else echo "  [SKIP] Phase 8"; fi
+else echo "  [SKIP] Phase 9"; fi
 
-if should_run 9; then
-    phase_header 9 "OUTPUT — Validation"
+if should_run 10; then
+    phase_header 10 "OUTPUT — Validation"
     echo "  Checking predictions..."
     if [ -f "${SCRIPT_DIR}/data/predictions/ctrl_freaks_predictions.csv" ]; then
         LINES=$(wc -l < "${SCRIPT_DIR}/data/predictions/ctrl_freaks_predictions.csv")

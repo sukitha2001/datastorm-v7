@@ -65,8 +65,8 @@ def download_sri_lanka_pois(out_path="scraping/sri_lanka_pois.parquet"):
                 print("CRITICAL: All attempts to download map data failed.")
                 raise
 
-@step
-def enrich_spatial_features(coords_path: str) -> pd.DataFrame:
+# @step
+def enrich_spatial_features(coords_path: str, out_path: str) -> pd.DataFrame:
     """Vectorized spatial join. Loads data from the provided path."""
     
     # Load the data INSIDE the step
@@ -104,4 +104,25 @@ def enrich_spatial_features(coords_path: str) -> pd.DataFrame:
     poi_counts = joined.groupby(['Outlet_ID', 'poi_type']).size().unstack(fill_value=0)
     poi_counts.columns = [f"poi_{c}_count" for c in poi_counts.columns]
     
-    return poi_counts.reset_index()
+    final_df = poi_counts.reset_index()
+    final_df.to_parquet(out_path, index=False)
+    print(f"[Spatial Enrichment] Saved spatial features to {out_path}")
+    
+    return final_df
+
+
+if __name__ == "__main__":
+    import yaml
+    with open("params.yaml") as f:
+        params = yaml.safe_load(f)
+    
+    silver_dir = params['data']['silver_dir']
+    gold_dir = params['data']['gold_dir']
+    
+    coords_path = os.path.join(silver_dir, "coordinates.parquet")
+    spatial_feat_path = os.path.join(gold_dir, "spatial_features.parquet")
+    
+    os.makedirs(gold_dir, exist_ok=True)
+    
+    print("[Spatial Enrichment] Running POI enrichment...")
+    enrich_spatial_features(coords_path=coords_path, out_path=spatial_feat_path)

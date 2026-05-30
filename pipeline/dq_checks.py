@@ -56,11 +56,13 @@ def check_range(
     return clean, rejected
 
 
+from typing import Optional
+
 def check_format(
     df: pd.DataFrame,
     col: str,
-    pattern: str | None = None,
-    expected_dtype: str | None = None,
+    pattern: Optional[str] = None,
+    expected_dtype: Optional[str] = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     bad_mask = pd.Series([False] * len(df), index=df.index)
     reasons = []
