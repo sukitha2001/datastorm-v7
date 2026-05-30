@@ -105,19 +105,31 @@ upside = (
 western_pred["incremental_volume"] = np.clip(upside, 0, None)
 western_pred = western_pred[western_pred["incremental_volume"] > 0].copy()
 
+# Per-outlet distributor (use most common)
+distributor = (
+    western_tx.groupby("Outlet_ID")["Distributor_ID"]
+    .agg(lambda x: x.mode().iloc[0] if len(x.mode()) else x.iloc[0])
+    .reset_index()
+)
+
 # Attach spend type + metadata
 western_pred = western_pred.merge(
     western_info[
-        ["Outlet_ID", "spend_type", "volume_cv", "Cooler_Count", "Outlet_Type"]
+        ["Outlet_ID", "spend_type", "volume_cv", "Cooler_Count", "Outlet_Type", "Outlet_Size", "constraint_flag"]
     ],
     on="Outlet_ID",
     how="left",
+).merge(
+    distributor, on="Outlet_ID", how="left"
 ).fillna(
     {
         "spend_type": "discount",
         "volume_cv": 0,
         "Cooler_Count": 0,
         "Outlet_Type": "Unknown",
+        "Outlet_Size": "Unknown",
+        "constraint_flag": 0,
+        "Distributor_ID": "Unknown",
     }
 )
 
@@ -168,6 +180,15 @@ for tier_name in ["tier_1_high", "tier_2_medium", "tier_3_low"]:
         allocation.append(
             {
                 "Outlet_ID": row["Outlet_ID"],
+                "Distributor_ID": row["Distributor_ID"],
+                "Outlet_Type": row["Outlet_Type"],
+                "Outlet_Size": row["Outlet_Size"],
+                "Cooler_Count": int(row["Cooler_Count"]),
+                "constraint_flag": int(row["constraint_flag"]),
+                "volume_cv": round(row["volume_cv"], 3),
+                "historical_max_volume": int(row["historical_max_volume"]),
+                "Maximum_Monthly_Liters": int(row["Maximum_Monthly_Liters"]),
+                "incremental_volume": int(row["incremental_volume"]),
                 "Trade_Spend_LKR": round(spend, 2),
                 "Spend_Type": row["spend_type"],
             }
@@ -214,11 +235,19 @@ for t in ["tier_1_high", "tier_2_medium", "tier_3_low"]:
     print(f"        {t}: {c} outlets, avg LKR {avg:,.0f}")
 
 # ── Output ────────────────────────────────────────────────────────
-out_path = os.path.join(OUT_DIR, "ctrl_freaks_budget_allocations.csv")
-_ = alloc_df[["Outlet_ID", "Trade_Spend_LKR", "Spend_Type"]].to_csv(
-    out_path, index=False
-)
+out_path = os.path.join(OUT_DIR, "ctrl_freaks_budget_mapping.csv")
+cols = [
+    "Outlet_ID", "Distributor_ID", "Outlet_Type", "Outlet_Size",
+    "Cooler_Count", "constraint_flag", "volume_cv",
+    "historical_max_volume", "Maximum_Monthly_Liters",
+    "incremental_volume", "Trade_Spend_LKR", "Spend_Type",
+]
+_ = alloc_df[cols].to_csv(out_path, index=False)
 print(f"\n[4/5] → Saved {out_path} ({len(alloc_df)} rows)")
+
+simple_path = os.path.join(OUT_DIR, "ctrl_freaks_budget_allocations.csv")
+_ = alloc_df[["Outlet_ID", "Trade_Spend_LKR"]].to_csv(simple_path, index=False)
+print(f"      → Saved {simple_path} ({len(alloc_df)} rows)")
 
 print("\n" + "=" * 60)
 print("ALLOCATION SUMMARY")

@@ -29,7 +29,6 @@ const data = {
   navMain: [
     { title: "Overview", url: "/", icon: <LayoutDashboard /> },
     { title: "Outlet Map", url: "/map", icon: <Map /> },
-    { title: "Budget Allocation", url: "/budget", icon: <Banknote /> },
     { title: "Settings", url: "/settings", icon: <Settings /> },
   ],
   navSecondary: [],

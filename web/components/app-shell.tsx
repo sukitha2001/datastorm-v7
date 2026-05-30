@@ -6,6 +6,7 @@ import dynamic from "next/dynamic"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const LazyOutletMap = dynamic(() => import("@/components/outlet-map"), {
   ssr: false,
@@ -16,6 +17,10 @@ interface Outlet {
   Maximum_Monthly_Liters: number
   Latitude: number
   Longitude: number
+  Outlet_Type?: string
+  Outlet_Size?: string
+  Cooler_Count?: number
+  Distributor_ID?: string
   Trade_Spend_LKR?: number
 }
 
@@ -28,43 +33,31 @@ function useMapData() {
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    import("@/components/outlet-map")
-
     let cancelled = false
     async function load() {
-      const [coords, preds, budget] = await Promise.all([
-        fetch("/data/outlet_coordinates.json").then((r) => r.json()),
-        fetch("/data/predictions.json").then((r) => r.json()),
-        fetch("/data/budget_allocations.json").then((r) => r.json()),
-      ])
-      if (cancelled) return
+      try {
+        console.log("[useMapData] fetching outlets.json...")
+        const res = await fetch("/data/outlets.json")
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const all: Outlet[] = await res.json()
+        if (cancelled) return
+        console.log("[useMapData] loaded", all.length, "outlets")
 
-      const predMap = new Map(
-        preds.map((p: any) => [p.Outlet_ID, p.Maximum_Monthly_Liters])
-      )
-      const budgetMap = new Map(
-        budget.map((b: any) => [b.Outlet_ID, b.Trade_Spend_LKR])
-      )
-
-      const merged: Outlet[] = coords
-        .map((c: any) => ({
-          Outlet_ID: c.Outlet_ID,
-          Latitude: c.Latitude,
-          Longitude: c.Longitude,
-          Maximum_Monthly_Liters: predMap.get(c.Outlet_ID) ?? 0,
-          Trade_Spend_LKR: budgetMap.get(c.Outlet_ID) ?? 0,
-        }))
-        .filter(
-          (o: any) =>
+        const western = all.filter(
+          (o) =>
             typeof o.Latitude === "number" &&
             typeof o.Longitude === "number" &&
             !isNaN(o.Latitude) &&
             !isNaN(o.Longitude) &&
             isWesternProvince(o.Latitude, o.Longitude)
         )
+        console.log("[useMapData] western outlets:", western.length)
 
-      setOutlets(merged)
-      setLoaded(true)
+        setOutlets(western)
+        setLoaded(true)
+      } catch (err) {
+        console.error("[useMapData] error:", err)
+      }
     }
     load()
     return () => { cancelled = true }
@@ -125,41 +118,72 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 }
           }
         >
-          {loaded && (
+          <div
+            style={{
+              border: "1px solid #e5e5e5",
+              borderRadius: 8,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              background: "#fff",
+              flex: 1,
+              minHeight: 0,
+              fontFamily: "system-ui, sans-serif",
+            }}
+          >
             <div
               style={{
-                border: "1px solid #e5e5e5",
-                borderRadius: 8,
-                overflow: "hidden",
+                padding: "10px 14px",
+                borderBottom: "1px solid #e5e5e5",
+                fontSize: 14,
+                fontWeight: 600,
                 display: "flex",
-                flexDirection: "column",
-                background: "#fff",
-                flex: 1,
-                minHeight: 0,
-                fontFamily: "system-ui, sans-serif",
+                justifyContent: "space-between",
+                alignItems: "center",
               }}
             >
-              <div
-                style={{
-                  padding: "10px 14px",
-                  borderBottom: "1px solid #e5e5e5",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <span>Western Province — Outlet Map</span>
-                <span style={{ color: "#666", fontWeight: 400, fontSize: 13 }}>
-                  {outlets.length.toLocaleString()} outlets
-                </span>
-              </div>
-              <div style={{ flex: 1, minHeight: 0 }}>
-                <LazyOutletMap outlets={outlets} />
-              </div>
+              {loaded ? (
+                <>
+                  <span>Western Province — Outlet Map</span>
+                  <span style={{ color: "#666", fontWeight: 400, fontSize: 13 }}>
+                    {outlets.length.toLocaleString()} outlets
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-3 w-20" />
+                </>
+              )}
             </div>
-          )}
+            <div style={{ flex: 1, minHeight: 0 }}>
+              {loaded ? (
+                <LazyOutletMap outlets={outlets} />
+              ) : (
+                <div
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 12,
+                    }}
+                  >
+                    <Skeleton className="size-12 rounded-full" />
+                    <Skeleton className="h-3 w-32" />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>

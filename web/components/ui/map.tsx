@@ -35,6 +35,7 @@ import type {
     LocationEvent,
     Marker,
     MarkerCluster,
+    MarkerClusterGroupOptions,
     PointExpression,
     Polygon,
     Polyline,
@@ -46,8 +47,8 @@ import type {
 import "leaflet-draw/dist/leaflet.draw.css"
 import "leaflet.fullscreen/dist/Control.FullScreen.css"
 import type {} from "leaflet.markercluster"
-import "leaflet.markercluster/dist/MarkerCluster.css"
-import "leaflet.markercluster/dist/MarkerCluster.Default.css"
+import "react-leaflet-cluster/dist/assets/MarkerCluster.css"
+import "react-leaflet-cluster/dist/assets/MarkerCluster.Default.css"
 import "leaflet/dist/leaflet.css"
 import {
     CircleIcon,
@@ -95,7 +96,6 @@ import {
     type TileLayerProps,
     type TooltipProps,
 } from "react-leaflet"
-import type { MarkerClusterGroupProps } from "react-leaflet-markercluster"
 
 function createLazyComponent<T extends ComponentType<any>>(
     factory: () => Promise<{ default: T }>
@@ -182,7 +182,7 @@ const LeafletFeatureGroup = createLazyComponent(() =>
     }))
 )
 const LeafletMarkerClusterGroup = createLazyComponent(async () =>
-    import("react-leaflet-markercluster").then((mod) => ({
+    import("react-leaflet-cluster").then((mod) => ({
         default: mod.default,
     }))
 )
@@ -506,8 +506,7 @@ function MapLayersControl({
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="end"
-                className="z-1000"
-                container={map.getContainer()}>
+                className="z-1000">
                 {showTileLayersDropdown && (
                     <>
                         <DropdownMenuLabel>{tileLayersLabel}</DropdownMenuLabel>
@@ -597,7 +596,7 @@ function MapMarkerClusterGroup({
     },
     icon,
     ...props
-}: Omit<MarkerClusterGroupProps, "iconCreateFunction"> & {
+}: Omit<MarkerClusterGroupOptions, "iconCreateFunction"> & {
     children: ReactNode
     icon?: (markerCount: number) => ReactNode
 }) {

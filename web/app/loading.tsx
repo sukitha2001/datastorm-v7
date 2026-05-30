@@ -1,12 +1,53 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 
 function CardSkeleton() {
   return (
-    <div className="flex-1 min-w-[180px] rounded-xl border bg-gradient-to-t from-primary/5 to-card shadow-xs p-4 space-y-3">
-      <Skeleton className="h-3 w-24" />
-      <Skeleton className="h-7 w-32" />
-      <Skeleton className="h-3 w-20" />
+    <Card className="flex-1 min-w-[180px]">
+      <CardHeader>
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-7 w-32 mt-1" />
+        <Skeleton className="h-5 w-20 mt-1" />
+      </CardHeader>
+      <CardFooter>
+        <Skeleton className="h-3 w-36" />
+      </CardFooter>
+    </Card>
+  )
+}
+
+function TableSkeleton({ rows = 8 }: { rows?: number }) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-8 w-32 ml-auto" />
+      </div>
+      <div className="rounded-md border">
+        <div className="border-b p-3">
+          <div className="flex gap-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-4 flex-1" />
+            ))}
+          </div>
+        </div>
+        {Array.from({ length: rows }).map((_, i) => (
+          <div key={i} className="border-b p-3">
+            <div className="flex gap-4">
+              {Array.from({ length: 5 }).map((_, j) => (
+                <Skeleton key={j} className="h-4 flex-1" />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-32" />
+        <div className="flex gap-1">
+          <Skeleton className="size-8" />
+          <Skeleton className="size-8" />
+        </div>
+      </div>
     </div>
   )
 }
@@ -15,38 +56,18 @@ export default function OverviewLoading() {
   return (
     <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
       <div className="flex flex-row flex-wrap gap-4 px-4 lg:px-6">
-        {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
+        <CardSkeleton />
+        <CardSkeleton />
+        <CardSkeleton />
       </div>
 
       <div className="px-4 lg:px-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base font-medium">
-              <Skeleton className="h-4 w-40" />
-            </CardTitle>
-            <CardDescription>
-              <Skeleton className="h-3 w-full max-w-xl" />
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-
-      <div className="px-4 lg:px-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-medium">
-              <Skeleton className="h-4 w-32" />
-            </CardTitle>
-            <CardDescription>
-              <Skeleton className="h-3 w-48" />
-            </CardDescription>
+            <Skeleton className="h-5 w-48" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-8 w-full" />
-              ))}
-            </div>
+            <TableSkeleton />
           </CardContent>
         </Card>
       </div>

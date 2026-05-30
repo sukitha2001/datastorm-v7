@@ -15,5 +15,3 @@ reportOptionalOperand = false
 reportOperatorIssue = false
 reportConstantRedefinition = false
 reportMissingParameterType = false
-reportIndexIssue = false
-unknownAtRules = false

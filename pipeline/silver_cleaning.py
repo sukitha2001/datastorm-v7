@@ -133,6 +133,13 @@ def check_outlets(
     report["outlets_format"] = {"passed": len(df), "rejected": len(rej)}
 
     df["constraint_flag"] = df["Outlet_ID"].isin(flatline_outlet_ids).astype(int)
+
+    # Normalize casing
+    df["Outlet_Size"] = df["Outlet_Size"].str.strip().str.replace("small", "Small", case=False)
+    df["Outlet_Type"] = df["Outlet_Type"].str.strip().replace({
+        "Bakry": "Bakery", "Grocry": "Grocery",
+    })
+
     report["outlets_constraint_flag"] = {
         "flagged": int(df["constraint_flag"].sum()),
         "unflagged": int(df.shape[0] - df["constraint_flag"].sum()),
