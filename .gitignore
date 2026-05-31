@@ -80,3 +80,4 @@ report/
 *.html
 html_to_pdf.py
 !README.md
+WP-Map.png
