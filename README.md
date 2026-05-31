@@ -1,192 +1,165 @@
-# 🌀 DataStorm 7.0 — Ctrl Freaks
+# Ctrl Freaks — DataStorm 7.0
 
 **Latent Demand Estimation Pipeline for Sri Lanka Beverage Distribution (January 2026 Forecast)**
 
-Built for the [DataStorm 7.0](https://octave.lk/datastorm/) competition by Octave John Keells Group. This project implements a production-grade **Agentic Medallion Architecture** to solve the left-censored demand problem in FMCG distribution.
-
----
-
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Key Innovations](#key-innovations)
-- [Architecture](#architecture)
-- [Project Structure](#project-structure)
-- [Pipeline Stages](#pipeline-stages)
-- [Getting Started](#getting-started)
-- [Tech Stack](#tech-stack)
-- [Team](#team)
-
----
-
-## Overview
-
-Ctrl Freaks' solution addresses the "min(Demand, Constraint)" problem. Observed sales are often capped by supply-side constraints (credit, delivery, storage). We estimate the **true uncapped potential** for 20,000 outlets for January 2026 using a combination of censored regression, spatial diffusion modeling, and peer-group benchmarking.
-
----
-
-## Key Innovations
-
-- **Turing Reaction-Diffusion Feature**: Inspired by Alan Turing's morphogenesis papers, we implemented a Gray-Scott RD system to compute spatial "demand pressure" activator surfaces.
-- **Tobit-Style Censored Regression**: A structural modeling approach that explicitly accounts for left-censoring at observed historical peaks.
-- **Agentic Medallion Pipeline**: A 4-stage pipeline (Agents A-D) that moves data from raw forensic records to model-ready features and final forecasts.
-- **OSM Spatial Enrichment**: Vectorized extraction of 8,750+ POIs via the Overpass API to map outlet catchment density.
-
----
-
-## Architecture
-
-```mermaid
-graph TD
-    subgraph A["(Bronze)"]
-        A1[Raw CSV Ingestion] --> A2[Parquet Conversion]
-    end
-
-    subgraph B["(Silver)"]
-        B1[DQ Audits] --> B2[Quarantine Pattern]
-        B2 --> B3[Flatline Forensic Check]
-    end
-
-    subgraph C["(Gold)"]
-        C1[OSM POI Scraper] --> C2[Turing RD Simulation]
-        C2 --> C3[Feature Engineering]
-    end
-
-    subgraph D["(Model)"]
-        D1[Censoring Threshold Logic] --> D2[Tobit GBR Ensemble]
-        D2 --> D3[SFA & Peer Uplift]
-    end
-
-    A2 --> B1
-    B3 --> C1
-    C3 --> D1
-    D3 --> F[Final CSV Predictions]
-
-    subgraph G["(Web App)"]
-        F --> G1[Export JSON]
-        G1 --> G2[Next.js + react-leaflet]
-        G2 --> G3[Map / Table / Detail]
-    end
-```
+Built for [DataStorm 7.0](https://octave.lk/datastorm/) by Octave John Keells Group. Estimates uncapped monthly demand for 20,000 outlets and allocates a LKR 5M promotional budget across Western Province.
 
 ---
 
 ## Project Structure
 
 ```
-.
 ├── data/
-│   ├── bronze/               # Ingested parquet files
-│   ├── silver/               # Cleaned data + rejected records
-│   ├── gold/                 # Feature matrix + Turing RD states
-│   └── predictions/          # Final Submission CSV
-├── report/                   # Formal Typst Report
-│   ├── main.typ              # Entry point
-│   └── sections/             # Modular chapters
+│   ├── raw/            # Source CSVs (transactions, outlet master, coordinates, etc.)
+│   ├── bronze/         # Ingestion — untouched parquet snapshots + manifest.json
+│   ├── silver/         # Cleaned parquet + dq_report.json + rejected_records
+│   ├── gold/           # Feature-engineered model_ready.parquet + POI data + RD grid
+│   └── output/         # Final CSVs
 ├── src/
-│   ├── bronze/               # Ingestion
-│   ├── silver/               # DQ & Forensics
-│   ├── gold/                 # POIs & Turing RD
-│   ├── model/                # Latent Demand Modeling
-│   └── eda/                  # Analysis & Diagnostic Scripts
-├── web/                      # Outlet Intelligence Web App
-│   ├── src/
-│   │   ├── app/              # Next.js pages + API routes
-│   │   ├── components/       # React components
-│   │   └── lib/              # Types + utils
-│   ├── scripts/              # Data export script
-│   └── public/data/          # Generated outlet JSON
-├── outputs/                  # Diagnostic Visualizations
-├── run_pipeline.sh           # End-to-End Runner
-└── params.yaml               # Pipeline configuration
+│   ├── bronze/ingest.py
+│   ├── silver/dq_checks.py + clean.py
+│   ├── gold/poi_scraper.py + turing_rd.py + features.py
+│   ├── model/tobit_sfa.py
+│   ├── spend/optimizer.py
+│   └── xai/explainer.py
+├── web/                # Next.js 16 outlet dashboard
+│   ├── app/            # 4 static routes
+│   │   ├── page.tsx          # Overview (metric cards + budget table)
+│   │   ├── map/page.tsx      # Western Province outlet map (clustered)
+│   │   ├── budget/page.tsx   # Sorted allocation table
+│   │   └── settings/page.tsx # Kafka + GenAI + pipeline config
+│   ├── components/     # shadcn/ui + Leaflet map components
+│   ├── public/data/    # Pipeline-generated JSON files for the web app
+│   └── package.json
+├── run_pipeline.sh
+├── pitch_deck.html     # Executive pitch deck (standalone HTML)
+└── README.md
 ```
 
 ---
 
-## Pipeline Stages
-
-### 1️⃣ Bronze (Ingestion)
-Converts raw CSV streams into type-strict Parquet structures, preserving $100\%$ of source signals with zero-loss compression.
-
-### 2️⃣ Silver (Forensics)
-Applies a **Quarantine Pattern** to trap anomalies. Implements the **Historical Flatline Check** to detect outlets whose sales are artificially capped by credit or delivery cycles.
-
-### 3️⃣ Gold (Feature Engineering)
-- **Overpass Scraper**: Fetches nationwide POI data (Schools, Markets, Bus Stations).
-- **Turing RD**: Runs a 500-step Gray-Scott simulation to derive the `rd_demand_pressure` spatial activator feature.
-
-### 4️⃣ Model (Latent Estimation)
-- **Tobit Ensemble**: A 50/30/20 weighted ensemble of Censored Gradient Boosting, Stochastic Frontier Analysis (SFA), and Peer-Group Uplift.
-- **January Adjustment**: Applies a seasonal index to account for peak demand cycles.
-
----
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
+
 - Python 3.9+
-- Node.js 20+ (for the web app)
-- npm 9+ (for the web app)
-- [Typst](https://typst.app/) (for report generation)
-- [ZenML](https://zenml.io) (optional, orchestrator-agnostic)
+- Node.js 20+
+- pnpm 9+
 
-### Installation
+### Setup
+
 ```bash
-# Python dependencies
-pip install pandas numpy scipy scikit-learn matplotlib seaborn pyarrow geopandas
+# Python
+uv sync                    # or: pip install -r requirements.txt
 
-# Web app dependencies
-npm install --prefix web
+# Web app
+pnpm install --prefix web
 ```
 
-### Running the Full Pipeline
-The provided shell script executes the end-to-end flow from data ingestion to final predictions and report-ready EDA:
+### Run the Pipeline
 
 ```bash
 chmod +x run_pipeline.sh
 ./run_pipeline.sh
 ```
 
-### Running the Web App
-The Outlet Intelligence Web App visualizes predictions on an interactive map:
+Supports a `--start-from N` flag to resume from a specific phase:
+
+| Flag | Description |
+|------|-------------|
+| `--start-from 1` | Bronze ingestion (default) |
+| `--start-from 2` | Silver cleaning |
+| `--start-from 3` | Gold POI spatial enrichment |
+| `--start-from 4` | Gold feature assembly |
+| `--start-from 5` | Gold EDA prep |
+| `--start-from 6` | Turing reaction-diffusion |
+| `--start-from 7` | Latent demand model |
+| `--start-from 8` | Budget optimization |
+| `--start-from 9` | JSON/web asset export |
+| `--start-from 10` | Output validation |
+
+Outputs go to `data/output/teamname_predictions.csv` and `data/output/teamname_budget_allocations.csv`. Phase 9 automatically writes JSON files to `web/public/data/` for the dashboard.
+
+### Run the Web App
 
 ```bash
-# 1. Activate Python environment and export data
-source .venv/bin/activate
-python3 web/scripts/export-data.py
-
-# 2. Start Next.js dev server
-npm run dev --prefix web
-# → http://localhost:3000
+pnpm run dev --prefix web    # → http://localhost:3000
 ```
 
-To build for production:
+Build for production:
+
 ```bash
-npm run build --prefix web
-npm run start --prefix web
+pnpm run build --prefix web
+pnpm run start --prefix web
 ```
 
-### Compiling the Report
-To generate the formal PDF report:
-```bash
-typst compile report/main.typ --root .
-```
+---
+
+## Web App — Outlet Intelligence Dashboard
+
+4 static pages rendered via Next.js App Router:
+
+| Route | Page | Content |
+|-------|------|---------|
+| `/` | Overview | 6 metric cards + strategy summary + budget DataTable |
+| `/map` | Outlet Map | Western Province ~8,900 outlets, clustered CircleMarkers with popups |
+| `/budget` | Budget Allocation | Sorted table of 1,799 allocations with LKR + share % |
+| `/settings` | Settings | Kafka streaming config, GenAI API keys, pipeline settings |
+
+**Stack**: Next.js 16 + shadcn/ui + lucide-react + react-leaflet + MarkerClusterGroup + @tanstack/react-table
+
+**Map performance**: Mounted once in the persistent layout (`AppShell`), hidden off-screen on non-map pages using `position: absolute; left: -9999px`. Navigates instantly — no re-initialization, no jank. A `ResizeObserver` auto-invalidates Leaflet on layout transitions.
+
+---
+
+## Pipeline Architecture
+
+**Medallion layers**: Raw → Bronze → Silver → Gold → Model → Output.
+
+| Agent | Layer | Purpose |
+|-------|-------|---------|
+| A | Bronze | Forensic ingestion — zero transformations, schema manifest |
+| B | Silver | 8 DQ check functions, quarantine pattern, flatline forensic check |
+| C | Gold | OSM POI scraping (500m/1000m/2000m radii), Gray-Scott Turing RD, feature engineering |
+| D | Model | Tobit censored regression + SFA + peer-group uplift ensemble |
+| E | Spend | LKR 5M budget optimizer (tiered allocation by spend type) |
+| F | XAI | LLM-generated per-outlet explanations |
+
+---
+
+## Key Features
+
+- **Turing Reaction-Diffusion**: Gray-Scott RD simulation at 1000 timesteps produces a `rd_demand_pressure` spatial activator feature per outlet grid cell.
+- **Censoring threshold logic**: Per-outlet constraint ceiling derived from `constraint_score` and `flatline_flag`.
+- **Ensemble prediction**: 50% Tobit + 30% SFA + 20% peer 90th percentile, adjusted by January seasonality.
+- **Spend optimizer**: Splits LKR 5M into 3 tiers (45/35/20) by incremental upside, capped at LKR 150K/60K/10K per outlet.
+- **Spend type assignment**: Discount / Merchandising / Promotional based on outlet type, flatline flag, and cooler count.
 
 ---
 
 ## Tech Stack
 
 | Domain | Tools |
-|---|---|
-| **Pipeline** | ZenML, DVC, Apache Arrow |
-| **Analysis** | Pandas, SciPy, Scikit-Learn |
+|--------|-------|
+| **Pipeline** | Python, pandas, numpy, scipy, statsmodels |
 | **Spatial** | GeoPandas, Overpass API, Shapely |
-| **Web App** | Next.js 16, shadcn/ui, react-leaflet, Leaflet |
-| **Reporting** | Mermaid.js |
+| **Web** | Next.js 16, shadcn/ui, lucide-react, react-leaflet, MarkerClusterGroup, @tanstack/react-table |
+| **Packaging** | pnpm, uv, pyproject.toml |
+| **Reporting** | Pitch deck (standalone HTML) |
+
+---
+
+## Output Files
+
+| File | Rows | Columns |
+|------|------|---------|
+| `teamname_predictions.csv` | 20,000 | Outlet_ID, Maximum_Monthly_Liters |
+| `teamname_budget_allocations.csv` | 1,799 | Outlet_ID, Trade_Spend_LKR, Spend_Type, Outlet_Type |
+| `teamname_budget_simple.csv` | 1,799 | Outlet_ID, Trade_Spend_LKR |
 
 ---
 
 ## Team — Ctrl Freaks
 
 - **Sukitha Rathnayake** — MLOps, DQ Forensics, Ensemble Logic
-- **Vidura Gunawardana** — Pipeline Architecture, Turing RD, Tobit Modeling
+- **Vidura Gunawardana** — Pipeline Architecture, Turing RD, Tobit Modeling, Web App

@@ -215,7 +215,7 @@ if should_run 10; then
         echo "  [WARN] outlets.json not found"
     fi
 else
-    echo "  [SKIP] Phase 9"
+    echo "  [SKIP] Phase 10"
 fi
 
 echo ""

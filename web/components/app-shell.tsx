@@ -120,12 +120,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         >
           <div
             style={{
-              border: "1px solid #e5e5e5",
+              border: "1px solid",
+              borderColor: "var(--border)",
               borderRadius: 8,
               overflow: "hidden",
               display: "flex",
               flexDirection: "column",
-              background: "#fff",
+              background: "var(--card)",
               flex: 1,
               minHeight: 0,
               fontFamily: "system-ui, sans-serif",
@@ -134,7 +135,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div
               style={{
                 padding: "10px 14px",
-                borderBottom: "1px solid #e5e5e5",
+                borderBottom: "1px solid",
+                borderColor: "var(--border)",
                 fontSize: 14,
                 fontWeight: 600,
                 display: "flex",
@@ -145,7 +147,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               {loaded ? (
                 <>
                   <span>Western Province — Outlet Map</span>
-                  <span style={{ color: "#666", fontWeight: 400, fontSize: 13 }}>
+                  <span style={{ color: "var(--muted-foreground)", fontWeight: 400, fontSize: 13 }}>
                     {outlets.length.toLocaleString()} outlets
                   </span>
                 </>
