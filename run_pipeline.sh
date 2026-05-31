@@ -146,7 +146,7 @@ merged['Trade_Spend_LKR'] = merged['Trade_Spend_LKR'].fillna(0).round(2)
 merged['Cooler_Count'] = merged['Cooler_Count'].fillna(0).astype(int)
 
 # Keep only Western Province distributors
-merged = merged[merged['Distributor_ID'].str.startswith('DIST_W', na=False)].copy()
+# merged = merged[merged['Distributor_ID'].str.startswith('DIST_W', na=False)].copy()
 
 # Fill NaN in string/object columns to avoid invalid JSON (NaN is not valid JSON)
 for col in merged.select_dtypes(include='object').columns:

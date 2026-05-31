@@ -74,12 +74,9 @@ mlartifacts/
 # ========================
 predictions/
 outputs/
-Agents.md
-TuringPattern.md
 report/
-report.md
-Plan.md
-problem.md
-Problem Statement - 2nd Round.pdf
-BUDGET_METHODOLOGY.md
-DONE_SO_FAR.md
+*.md
+*.pdf
+*.html
+html_to_pdf.py
+!README.md

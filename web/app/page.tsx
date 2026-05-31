@@ -25,6 +25,37 @@ export default function OverviewPage() {
   const coords = readJSON("outlet_coordinates.json")
   const preds = readJSON("predictions.json")
   const budget = readJSON("budget_allocations.json")
+  const outlets = readJSON("outlets.json")
+
+  const predictionByOutlet = new Map(
+    preds.map((p: any) => [p.Outlet_ID, p.Maximum_Monthly_Liters ?? 0])
+  )
+  const budgetByOutlet = new Map(
+    budget.map((b: any) => [b.Outlet_ID, b.Trade_Spend_LKR ?? 0])
+  )
+  const spendTypeByOutlet = new Map(
+    budget.map((b: any) => [b.Outlet_ID, b.Spend_Type ?? "Not funded"])
+  )
+
+  const allOutletRows =
+    outlets.length > 0
+      ? outlets.map((outlet: any) => ({
+          ...outlet,
+          Maximum_Monthly_Liters: outlet.Maximum_Monthly_Liters ?? 0,
+          Trade_Spend_LKR: outlet.Trade_Spend_LKR ?? 0,
+          Spend_Type:
+            outlet.Spend_Type ??
+            spendTypeByOutlet.get(outlet.Outlet_ID) ??
+            "Not funded",
+        }))
+      : coords.map((coord: any) => ({
+          Outlet_ID: coord.Outlet_ID,
+          Latitude: coord.Latitude,
+          Longitude: coord.Longitude,
+          Maximum_Monthly_Liters: predictionByOutlet.get(coord.Outlet_ID) ?? 0,
+          Trade_Spend_LKR: budgetByOutlet.get(coord.Outlet_ID) ?? 0,
+          Spend_Type: spendTypeByOutlet.get(coord.Outlet_ID) ?? "Not funded",
+        }))
 
   const validCoords = coords.filter(
     (c: any) =>
@@ -52,8 +83,9 @@ export default function OverviewPage() {
       ? ((wpCoords.length / validCoords.length) * 100).toFixed(1)
       : "0"
 
-  const sorted = [...budget].sort(
-    (a: any, b: any) => b.Trade_Spend_LKR - a.Trade_Spend_LKR
+  const sorted = [...allOutletRows].sort(
+    (a: any, b: any) =>
+      (b.Maximum_Monthly_Liters ?? 0) - (a.Maximum_Monthly_Liters ?? 0)
   )
 
   return (
@@ -67,9 +99,9 @@ export default function OverviewPage() {
             //   extra: "All provinces included",
             // },
             {
-              label: "Western Province Outlets",
-              value: fmt(wpCoords.length),
-              sub: `${wpShare}% of total`,
+              label: "Mapped Outlets",
+              value: fmt(allOutletRows.length),
+              sub: `${fmt(wpCoords.length)} in Western Province`,
             },
             // {
             //   label: "Avg Predicted Volume",
@@ -81,7 +113,7 @@ export default function OverviewPage() {
             },
             {
               label: "Budget Allocations",
-              value: `${fmt(budget.length)} outlets`,
+              value: `${fmt(budget.length)} funded`,
               extra: `${fmtMoney(Math.round(totalBudget))} total`,
             },
             // {

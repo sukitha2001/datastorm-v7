@@ -22,6 +22,7 @@ os.makedirs(OUT_DIR, exist_ok=True)
 
 WESTERN_DISTRIBUTORS = ["DIST_W_01", "DIST_W_02", "DIST_W_03"]
 BUDGET = 5_000_000
+BUDGET_CENTS = BUDGET * 100
 
 print("=" * 60)
 print("Marketing Spend Optimization")
@@ -208,6 +209,41 @@ if remaining > 5000 and len(allocation) > 0:
     alloc_df = pd.DataFrame(allocation)
 
 total_spend = alloc_df["Trade_Spend_LKR"].sum() if len(alloc_df) > 0 else 0
+
+
+def enforce_budget_cap(df: pd.DataFrame, budget_cents: int) -> pd.DataFrame:
+    """Reconcile row-level rounding so total spend never exceeds the cap."""
+    if df.empty:
+        return df
+
+    fixed = df.copy()
+    cents = (fixed["Trade_Spend_LKR"] * 100).round().astype(int)
+    delta = int(cents.sum() - budget_cents)
+
+    if delta > 0:
+        order = cents.sort_values(ascending=False).index
+        for idx in order:
+            if delta <= 0:
+                break
+            reduction = min(delta, max(cents.loc[idx] - 1, 0))
+            cents.loc[idx] -= reduction
+            delta -= reduction
+    elif delta < 0:
+        order = fixed["incremental_volume"].sort_values(ascending=False).index
+        remaining_cents = abs(delta)
+        for idx in order:
+            if remaining_cents <= 0:
+                break
+            cents.loc[idx] += 1
+            remaining_cents -= 1
+
+    fixed["Trade_Spend_LKR"] = (cents / 100).round(2)
+    return fixed
+
+
+alloc_df = enforce_budget_cap(alloc_df, BUDGET_CENTS)
+total_spend = alloc_df["Trade_Spend_LKR"].sum() if len(alloc_df) > 0 else 0
+remaining = BUDGET - total_spend
 
 print("[3/5] Allocation complete")
 print(f"      Outlets funded: {len(alloc_df)}")

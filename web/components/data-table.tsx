@@ -93,7 +93,7 @@ function SortHeader({
     <button
       onClick={() => column.toggleSorting(sorted === "asc")}
       className={`inline-flex items-center gap-1 text-xs font-medium hover:text-foreground ${
-        align === "right" ? "justify-end w-full" : ""
+        align === "right" ? "w-full justify-end" : ""
       }`}
     >
       {label}
@@ -119,7 +119,7 @@ function InputFilter({ column }: { column: Column<any> }) {
       placeholder="Filter..."
       value={value}
       onChange={(e) => setValue(e.target.value)}
-      className="h-7 text-xs mt-1"
+      className="mt-1 h-7 text-xs"
     />
   )
 }
@@ -142,7 +142,7 @@ function SelectFilter({
         column.setFilterValue(v === "__all__" ? undefined : v)
       }
     >
-      <SelectTrigger className="h-7 text-xs mt-1">
+      <SelectTrigger className="mt-1 h-7 text-xs">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
@@ -181,16 +181,12 @@ function RangeFilter({
     const id = setTimeout(() => {
       const loNum = lo === "" ? -Infinity : Number(lo)
       const hiNum = hi === "" ? Infinity : Number(hi)
-      column.setFilterValue(
-        lo !== "" || hi !== ""
-          ? [loNum, hiNum]
-          : undefined
-      )
+      column.setFilterValue(lo !== "" || hi !== "" ? [loNum, hiNum] : undefined)
     }, 200)
     return () => clearTimeout(id)
   }, [lo, hi, column])
   return (
-    <div className="flex items-center gap-1 mt-1">
+    <div className="mt-1 flex items-center gap-1">
       <Input
         type="number"
         placeholder={String(min)}
@@ -244,7 +240,9 @@ const columns: ColumnDef<z.infer<typeof budgetSchema>>[] = [
     filterFn: "equalsString",
     header: ({ column }) => <SortHeader column={column} label="Type" />,
     cell: ({ row }) => (
-      <span className="text-xs text-muted-foreground">{row.original.Outlet_Type}</span>
+      <span className="text-xs text-muted-foreground">
+        {row.original.Outlet_Type}
+      </span>
     ),
   },
   {
@@ -262,7 +260,9 @@ const columns: ColumnDef<z.infer<typeof budgetSchema>>[] = [
     enableColumnFilter: true,
     filterFn: "equalsString",
     cell: ({ row }) => (
-      <span className="text-xs text-muted-foreground">{row.original.Outlet_Size}</span>
+      <span className="text-xs text-muted-foreground">
+        {row.original.Outlet_Size}
+      </span>
     ),
   },
   {
@@ -282,7 +282,7 @@ const columns: ColumnDef<z.infer<typeof budgetSchema>>[] = [
       const v = row.original.constraint_flag
       return (
         <span
-          className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
+          className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
             v
               ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
               : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
@@ -298,7 +298,9 @@ const columns: ColumnDef<z.infer<typeof budgetSchema>>[] = [
     header: ({ column }) => <SortHeader column={column} label="CV" />,
     filterFn: "inNumberRange",
     cell: ({ row }) => (
-      <span className="text-xs tabular-nums">{row.original.volume_cv.toFixed(3)}</span>
+      <span className="text-xs tabular-nums">
+        {row.original.volume_cv.toFixed(3)}
+      </span>
     ),
   },
   {
