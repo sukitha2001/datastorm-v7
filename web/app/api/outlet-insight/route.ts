@@ -3,11 +3,12 @@ import Groq from "groq-sdk";
 
 export async function POST(req: NextRequest) {
   let outlet: any = {};
+  let isHotspot = false;
 
   try {
     const body = await req.json();
     outlet = body.outlet || {};
-    const isHotspot = body.isHotspot || false;
+    isHotspot = body.isHotspot || false;
 
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {

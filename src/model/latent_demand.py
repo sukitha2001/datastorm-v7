@@ -17,6 +17,7 @@ import warnings
 import matplotlib
 import numpy as np
 import pandas as pd
+import shap
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import LabelEncoder, StandardScaler
@@ -601,5 +602,69 @@ summary["uplift_pct"] = (
     (summary["predicted_mean"] / summary["observed_mean"] - 1) * 100
 ).round(1)
 print(summary.to_string())
+
+# ══════════════════════════════════════════════════════════════════════
+# STEP 9: SHAP Analysis
+# ══════════════════════════════════════════════════════════════════════
+print("\n" + "=" * 60)
+print("STEP 9: SHAP Analysis")
+print("=" * 60)
+
+explainer = shap.TreeExplainer(model)
+raw_shap_values = explainer.shap_values(X_scaled)
+if isinstance(raw_shap_values, list):
+    shap_values = raw_shap_values[0]
+else:
+    shap_values = np.asarray(raw_shap_values)
+    if shap_values.ndim == 3:
+        shap_values = shap_values[:, :, 0]
+
+expected_value = explainer.expected_value
+if isinstance(expected_value, list):
+    expected_value = expected_value[0]
+expected_value = float(np.asarray(expected_value).reshape(-1)[0])
+
+# Plot 1: SHAP summary beeswarm
+shap.summary_plot(shap_values, X_scaled, feature_names=feature_cols, show=False)
+plt.savefig(os.path.join(PLOT_DIR, "03_shap_summary.png"), dpi=150, bbox_inches="tight")
+plt.close()
+print("  → Saved 03_shap_summary.png")
+
+# Plot 2: SHAP bar (mean absolute value)
+shap.summary_plot(
+    shap_values, X_scaled, feature_names=feature_cols, plot_type="bar", show=False
+)
+plt.savefig(os.path.join(PLOT_DIR, "04_shap_importance.png"), dpi=150, bbox_inches="tight")
+plt.close()
+print("  → Saved 04_shap_importance.png")
+
+# Plot 3: SHAP waterfall for a low-demand and high-demand outlet
+low_idx = int(y_tobit.argsort()[:5].mean())
+high_idx = int(y_tobit.argsort()[-5:].mean())
+for label, idx in [("low_demand", low_idx), ("high_demand", high_idx)]:
+    shap.waterfall_plot(
+        shap.Explanation(
+            values=shap_values[idx],
+            base_values=expected_value,
+            data=X_scaled[idx],
+            feature_names=feature_cols,
+        ),
+        show=False,
+    )
+    plt.savefig(
+        os.path.join(PLOT_DIR, f"05_shap_waterfall_{label}.png"),
+        dpi=150,
+        bbox_inches="tight",
+    )
+    plt.close()
+    print(f"  → Saved 05_shap_waterfall_{label}.png")
+
+# Save SHAP values for downstream use
+shap_out = pd.DataFrame(
+    shap_values, columns=[f"shap_{c}" for c in feature_cols]
+)
+shap_out["Outlet_ID"] = df["Outlet_ID"].values
+shap_out.to_parquet(os.path.join(BASE, "data/predictions/shap_values.parquet"), index=False)
+print(f"  → Saved shap_values.parquet ({len(shap_out)} rows × {len(shap_out.columns)} cols)")
 
 print("\nPipeline complete!")

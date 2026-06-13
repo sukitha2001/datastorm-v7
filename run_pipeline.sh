@@ -65,7 +65,7 @@ if should_run 5; then phase_header 5 "GOLD (EDA) — Turing RD Prep"; ${PYTHON} 
 
 if should_run 6; then phase_header 6 "GOLD (RD) — Turing Reaction-Diffusion"; ${PYTHON} "${SCRIPT_DIR}/src/gold/turing_rd.py"; else echo "  [SKIP] Phase 6"; fi
 
-if should_run 7; then phase_header 7 "MODEL — Latent Demand Estimation"; ${PYTHON} "${SCRIPT_DIR}/src/model/latent_demand.py"; else echo "  [SKIP] Phase 7"; fi
+if should_run 7; then phase_header 7 "MODEL — Latent Demand Estimation + SHAP"; ${PYTHON} "${SCRIPT_DIR}/src/model/latent_demand.py"; else echo "  [SKIP] Phase 7"; fi
 
 if should_run 8; then phase_header 8 "SPEND — Budget Optimization"; ${PYTHON} "${SCRIPT_DIR}/src/spend/optimizer.py"; else echo "  [SKIP] Phase 8"; fi
 
@@ -198,6 +198,17 @@ if should_run 10; then
         echo "  budget_allocations: $((LINES - 1)) rows"
     else
         echo "  [WARN] budget_allocations not found at data/budget/"
+    fi
+    echo "  Checking SHAP outputs..."
+    if [ -f "${SCRIPT_DIR}/outputs/model/03_shap_summary.png" ]; then
+        echo "  shap_summary.png:        $(stat -f%z "${SCRIPT_DIR}/outputs/model/03_shap_summary.png") bytes"
+    else
+        echo "  [WARN] 03_shap_summary.png not found"
+    fi
+    if [ -f "${SCRIPT_DIR}/data/predictions/shap_values.parquet" ]; then
+        echo "  shap_values.parquet:    $(stat -f%z "${SCRIPT_DIR}/data/predictions/shap_values.parquet") bytes"
+    else
+        echo "  [WARN] shap_values.parquet not found"
     fi
 else
     echo "  [SKIP] Phase 10"
